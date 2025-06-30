@@ -74,7 +74,7 @@ func main() {
 									text = ""
 								} else { idx = -1 }
 							} else {
-								sessionHistory.AddNote(idx,text)
+								sessionHistory.AddComment(idx,text)
 								fmt.Print("\r\x1b[2K\x1b[2A")
 								sessionHistory.Render()
 								break
@@ -102,7 +102,7 @@ func main() {
 type History struct {
 	Index int
 	Cmd string
-	Notes []string
+	Comments []string
 }
 
 type SessionHistory struct {
@@ -119,9 +119,9 @@ func (sh *SessionHistory) AddHistory() {
 	sh.LastModified = Unwrap(os.Stat(historyFile)).ModTime()
 }
 
-func (sh *SessionHistory) AddNote(idx int, content string) {
+func (sh *SessionHistory) AddComment(idx int, content string) {
 	if idx < 0 || idx > len(sh.History) {return}
-	sh.History[idx].Notes = append(sh.History[idx].Notes, content)
+	sh.History[idx].Comments = append(sh.History[idx].Comments, content)
 }
 
 func (sh SessionHistory) Render() {
@@ -137,8 +137,8 @@ func (sh SessionHistory) String() string {
 			item.Index,
 			item.Cmd,
 		)
-		for _, note := range item.Notes {
-			text += fmt.Sprintf("\x1b[2K  • %s\n", note)
+		for _, Comment := range item.Comments {
+			text += fmt.Sprintf("\x1b[2K  • %s\n", Comment)
 		}
 	}
 
