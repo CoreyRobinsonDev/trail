@@ -18,6 +18,7 @@ func main() {
 	versionPtr := flag.Bool("v", false, "view trail cli version")
 	listPtr := flag.Bool("list", false, "list all past sessions")
 	connectPtr := flag.String("connect", "", "connect to a past session")
+	removePtr := flag.String("remove", "", "remove a past session")
 	flag.Parse()
 
 	switch(true) {
@@ -47,7 +48,26 @@ func main() {
 			fmt.Printf("\x1b[33m%s\x1b[0m%s", fileName[:idx], fileName[idx:])
 			fmt.Printf("\t\x1b[2m%s\x1b[0m\n", sessionHistory.StartTime)
 		}
-		if len(files) != 0 { fmt.Println("\nrun \x1b[36mtrail -connect \x1b[33m{id}\x1b[0m to continue the session") }
+		if len(files) != 0 { 
+			fmt.Println("\nrun \x1b[36mtrail -connect \x1b[33m{id}\x1b[0m to continue the session") 
+			fmt.Println("run \x1b[36mtrail -remove \x1b[33m{id}\x1b[0m to remove a session") 
+		}
+	case *removePtr != "": 
+		homedir := Unwrap(os.UserHomeDir())
+		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
+		found := false
+		for _, file := range files {
+			if strings.HasPrefix(file.Name(), *removePtr) {
+				Expect(os.Remove(homedir + "/.config/trail/sessions/" + file.Name()))
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name being with [%s] could not be found\n", *removePtr)
+			os.Exit(1)
+		}
 	case *connectPtr != "": 
 		var sessionName string
 		homedir := Unwrap(os.UserHomeDir())
