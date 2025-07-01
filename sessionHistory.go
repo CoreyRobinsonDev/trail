@@ -104,6 +104,7 @@ type History struct {
 
 type SessionHistory struct {
 	Id string `json:"id"`
+	StartTime time.Time `json:"startTime"`
 	LastModified time.Time `json:"lastModified"`
 	History []History `json:"history"`
 }
@@ -152,6 +153,6 @@ func (sh *SessionHistory) Load(file string) {
 		fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m %s could not be found\n", file)
 		os.Exit(1)
 	}
-	Expect(json.Unmarshal(bytes, sh))
+	Expect(json.Unmarshal(bytes, &sh))
 }
 

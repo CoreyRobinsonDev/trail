@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -23,6 +24,7 @@ func main() {
 	case *startPtr: 
 		sessionHistory := SessionHistory{
 			Id: ReverseString(base64.StdEncoding.EncodeToString([]byte(time.Now().String())))[:16],
+			StartTime: time.Now(),
 			LastModified: Unwrap(os.Stat(historyFile)).ModTime(), 
 			History: []History{},
 		}
@@ -40,7 +42,10 @@ func main() {
 				idx++
 			}
 			uniqueIdentifiers = append(uniqueIdentifiers, fileName[:idx])
-			fmt.Printf("\x1b[33m%s\x1b[0m%s\n", fileName[:idx], fileName[idx:])
+			sessionHistory := SessionHistory{}
+			Expect(json.Unmarshal(Unwrap(os.ReadFile(homedir + "/.config/trail/sessions/" + file.Name())), &sessionHistory))
+			fmt.Printf("\x1b[33m%s\x1b[0m%s", fileName[:idx], fileName[idx:])
+			fmt.Printf("\t\x1b[2m%s\x1b[0m\n", sessionHistory.StartTime)
 		}
 		if len(files) != 0 { fmt.Println("\nrun \x1b[36mtrail -connect \x1b[33m{id}\x1b[0m to continue the session") }
 	case *connectPtr != "": 
