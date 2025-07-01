@@ -50,24 +50,27 @@ func main() {
 		}
 		if len(files) != 0 { 
 			fmt.Println("\nrun \x1b[36mtrail -connect \x1b[33m{id}\x1b[0m to continue the session") 
-			fmt.Println("run \x1b[36mtrail -remove \x1b[33m{id}\x1b[0m to remove a session") 
+			fmt.Println("run \x1b[36mtrail -remove \x1b[33m{id|\"*\"}\x1b[0m to remove a session") 
 		}
 	case *removePtr != "": 
 		homedir := Unwrap(os.UserHomeDir())
 		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
-		found := false
+
+		if *removePtr == "*" {
+			Expect(os.RemoveAll(homedir + "/.config/trail/sessions"))
+			Expect(os.MkdirAll(homedir + "/.config/trail/sessions", 0777))
+			os.Exit(0)
+		}
+
 		for _, file := range files {
 			if strings.HasPrefix(file.Name(), *removePtr) {
 				Expect(os.Remove(homedir + "/.config/trail/sessions/" + file.Name()))
-				found = true
-				break
+				os.Exit(0)
 			}
 		}
 
-		if !found {
-			fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name being with [%s] could not be found\n", *removePtr)
-			os.Exit(1)
-		}
+		fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name being with [%s] could not be found\n", *removePtr)
+		os.Exit(1)
 	case *connectPtr != "": 
 		var sessionName string
 		homedir := Unwrap(os.UserHomeDir())
