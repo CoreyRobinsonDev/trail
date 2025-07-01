@@ -1,29 +1,63 @@
 package main
 
 import (
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"os"
+	"slices"
+	"strings"
+	"time"
 )
 
 
 
 func main() {
 	startPtr := flag.Bool("start", false, "start session")
-					hasIdx := false
-					text = ""
+	versionPtr := flag.Bool("v", false, "view trail cli version")
+	listPtr := flag.Bool("list", false, "list all past sessions")
+	connectPtr := flag.String("connect", "", "connect to a past session")
 	flag.Parse()
 
 	switch(true) {
 	case *startPtr: 
 		sessionHistory := SessionHistory{
+			Id: ReverseString(base64.StdEncoding.EncodeToString([]byte(time.Now().String())))[:16],
 			LastModified: Unwrap(os.Stat(historyFile)).ModTime(), 
 			History: []History{},
 		}
 		SessionStart(sessionHistory)
 	case *versionPtr: fmt.Println("trail v1.0.0")
-	case *connectPtr != "": fmt.Println("connect")
+	case *listPtr: 
+		homedir := Unwrap(os.UserHomeDir())
+		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
+		uniqueIdentifiers := []string{}
 
+		for _, file := range files {
+			idx := 1
+			fileName := strings.Split(file.Name(), ".")[0]
+			for slices.Contains(uniqueIdentifiers, fileName[:idx]) {
+				idx++
+			}
+			uniqueIdentifiers = append(uniqueIdentifiers, fileName[:idx])
+			fmt.Printf("\x1b[33m%s\x1b[0m%s\n", fileName[:idx], fileName[idx:])
+		}
+	case *connectPtr != "": 
+		var sessionName string
+		homedir := Unwrap(os.UserHomeDir())
+		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
+
+		for _, file := range files {
+			if strings.HasPrefix(file.Name(), *connectPtr) {
+				sessionName = file.Name()
+				break
+			}
+		}
+		sessionHistory := SessionHistory{}
+		sessionHistory.Load(sessionName)
+		sessionHistory.LastModified = time.Now()
+		SessionStart(sessionHistory)
 	}
 }
+
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -17,14 +18,14 @@ var (
 )
 
 func SessionStart(sessionHistory SessionHistory) {
+	homedir := Unwrap(os.UserHomeDir())
+	Expect(os.MkdirAll(homedir + "/.config/trail/sessions", 0777))
 	keyEvents := Unwrap(keyboard.GetKeys(10))
 	Expect(keyboard.Open())
-	defer func() {
-		_ = keyboard.Close()
-	}()
+	defer keyboard.Close()
 
 
-	fmt.Println("\x1b[2J\x1b[H\x1b[90mc \x1b[2mto add a comment • \x1b[0m\x1b[90mesc \x1b[2mquit\x1b[0m")
+	sessionHistory.Render()
 	for {
 		select {
 		case event := <-keyEvents:
@@ -72,14 +73,15 @@ func SessionStart(sessionHistory SessionHistory) {
 								sessionHistory.AddComment(idx,text)
 								fmt.Print("\r\x1b[2K\x1b[2A")
 								sessionHistory.Render()
+								sessionHistory.Save()
 								break
 							}
-
 						}
 					}
 				}
 			} else {
 				if key == keyboard.KeyCtrlC || key == keyboard.KeyEsc {
+					sessionHistory.Save()
 					os.Exit(0)
 				}
 			}
@@ -87,21 +89,23 @@ func SessionStart(sessionHistory SessionHistory) {
 			if sessionHistory.LastModified.Before(Unwrap(os.Stat(historyFile)).ModTime()) {
 				sessionHistory.AddHistory()
 				sessionHistory.Render()
+				sessionHistory.Save()
 			}
 		
 		}
-		time.Sleep(time.Millisecond*200)
+		time.Sleep(time.Millisecond*100)
 	}
 }
 
 type History struct {
-	Cmd string
-	Comments []string
+	Cmd string `json:"cmd"`
+	Comments []string `json:"comments"`
 }
 
 type SessionHistory struct {
-	LastModified time.Time
-	History []History
+	Id string `json:"id"`
+	LastModified time.Time `json:"lastModified"`
+	History []History `json:"history"`
 }
 
 func (sh *SessionHistory) AddHistory() {
@@ -117,22 +121,37 @@ func (sh *SessionHistory) AddComment(idx int, content string) {
 }
 
 func (sh SessionHistory) Render() {
-	fmt.Println("\x1b[2J\x1b[H\x1b[90mc \x1b[2mto add a comment • \x1b[0m\x1b[90mesc \x1b[2mquit\x1b[0m")
-	fmt.Printf("%s", sh)
-}
-
-func (sh SessionHistory) String() string {
-	text := ""
+	fmt.Println("\x1b[2J\x1b[H\x1b[36mc\x1b[0m \x1b[90mto add a comment • \x1b[0m\x1b[36mesc\x1b[0m \x1b[90mquit\x1b[0m")
 	for i, item := range sh.History {
-		text += fmt.Sprintf(
+		fmt.Printf(
 			"\x1b[2K\x1b[2m%d\x1b[0m %s\n",
 			i,
 			item.Cmd,
 		)
-		for _, Comment := range item.Comments {
-			text += fmt.Sprintf("\x1b[2K  • %s\n", Comment)
+		for _, comment := range item.Comments {
+			fmt.Printf("\x1b[2K  • %s\n", comment)
 		}
 	}
-
-	return text
 }
+
+
+func (sh SessionHistory) Save() {
+	if len(sh.History) == 0 {return}
+	homedir := Unwrap(os.UserHomeDir())
+	Expect(os.WriteFile(
+		fmt.Sprintf("%s/.config/trail/sessions/%s.json", homedir, sh.Id),
+		Unwrap(json.MarshalIndent(sh, "", "\t")),
+		0666,
+	))
+}
+
+func (sh *SessionHistory) Load(file string) {
+	homedir := Unwrap(os.UserHomeDir())
+	bytes, err := os.ReadFile(homedir + "/.config/trail/sessions/" + file)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m %s could not be found\n", file)
+		os.Exit(1)
+	}
+	Expect(json.Unmarshal(bytes, sh))
+}
+
