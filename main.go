@@ -42,6 +42,7 @@ func main() {
 			uniqueIdentifiers = append(uniqueIdentifiers, fileName[:idx])
 			fmt.Printf("\x1b[33m%s\x1b[0m%s\n", fileName[:idx], fileName[idx:])
 		}
+		if len(files) != 0 { fmt.Println("\nrun \x1b[36mtrail -connect \x1b[33m{id}\x1b[0m to continue the session") }
 	case *connectPtr != "": 
 		var sessionName string
 		homedir := Unwrap(os.UserHomeDir())
