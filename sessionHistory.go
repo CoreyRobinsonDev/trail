@@ -46,6 +46,7 @@ func SessionStart(sessionHistory SessionHistory) {
 							fmt.Printf("\r\x1b[2K%d> \x1b[2menter comment\x1b[0m\x1b[13D", idx)
 						} else {
 							var lines int
+							text = strings.ReplaceAll(text, "\n", "\n    ")
 							if lines == 0 {
 								fmt.Printf("\r\x1b[2K%d> %s", idx, text)
 							} else {
