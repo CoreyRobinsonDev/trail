@@ -2,6 +2,7 @@
 Leave a trail of commands
 
 <br>
+
 [Usage](#Usage) <span>&nbsp;•&nbsp;</span> [Install](#Install)
 
 ## Usage
