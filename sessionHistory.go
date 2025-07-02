@@ -45,12 +45,13 @@ func SessionStart(sessionHistory SessionHistory) {
 						} else if text == "" && hasIdx {
 							fmt.Printf("\r\x1b[2K%d> \x1b[2menter comment\x1b[0m\x1b[13D", idx)
 						} else {
-							lines := strings.Count(text, "\n")
+							var lines int
 							if lines == 0 {
 								fmt.Printf("\r\x1b[2K%d> %s", idx, text)
 							} else {
 								fmt.Printf("\r\x1b[2K\x1b[%dA%d> %s", lines, idx, text)
 							}
+							lines = strings.Count(text, "\n")
 						}
 						c, k, e := keyboard.GetKey()
 						if e != nil { fmt.Fprintf(os.Stderr,"error reading input: %v\n", e) }
