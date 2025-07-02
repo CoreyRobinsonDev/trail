@@ -1,7 +1,7 @@
 # trail
 Leave a trail of commands
 ```bash
-c to add a comment • esc quit
+c to add a comment • r to remove a command • esc quit
 0 ping 10.129.134.166
 1 nmap -sV 10.129.134.166
   • 135/tcp  open  msrpc         Microsoft Windows RPC

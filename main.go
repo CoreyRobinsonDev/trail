@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 )
+var version = "v1.1.0"
 
 
 
@@ -44,7 +45,7 @@ func main() {
 	}
 
 	switch(true) {
-	case *versionPtr: fmt.Println("trail v1.0.0")
+	case *versionPtr: fmt.Printf("trail %s\n", version)
 	case *listPtr: 
 		homedir := Unwrap(os.UserHomeDir())
 		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
