@@ -8,13 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/atotto/clipboard"
 	"github.com/eiannone/keyboard"
 )
 
 var (
 	historyFile = os.Getenv("HISTFILE")
-	text string
-	idx = -1
 )
 
 func SessionStart(sessionHistory SessionHistory) {
@@ -23,7 +22,6 @@ func SessionStart(sessionHistory SessionHistory) {
 	keyEvents := Unwrap(keyboard.GetKeys(10))
 	Expect(keyboard.Open())
 	defer keyboard.Close()
-
 
 	sessionHistory.Render()
 	for {
@@ -35,10 +33,11 @@ func SessionStart(sessionHistory SessionHistory) {
 			if char != 0 {
 				if char == 'c' {
 					hasIdx := false
-					text = ""
-					idx = -1
+					text := ""
+					idx := -1
 					fmt.Println()
-					for {
+
+					inputLoop: for {
 						if text == "" && !hasIdx {
 							fmt.Printf("\r\x1b[2KI> \x1b[2menter command index (ex: \x1b[36m0\x1b[0m \x1b[2mls)\x1b[0m\x1b[30D")
 						} else if !hasIdx {
@@ -46,22 +45,30 @@ func SessionStart(sessionHistory SessionHistory) {
 						} else if text == "" && hasIdx {
 							fmt.Printf("\r\x1b[2K%d> \x1b[2menter comment\x1b[0m\x1b[13D", idx)
 						} else {
-							fmt.Printf("\r\x1b[2K%d> %s", idx, text)
+							lines := strings.Count(text, "\n")
+							if lines == 0 {
+								fmt.Printf("\r\x1b[2K%d> %s", idx, text)
+							} else {
+								fmt.Printf("\r\x1b[2K\x1b[%dA%d> %s", lines, idx, text)
+							}
 						}
 						c, k, e := keyboard.GetKey()
-						if e != nil { fmt.Fprintf(os.Stderr,"error reading input: %v", e) }
-						if c != 0 {
-							text += string(c)
-						} else if k == keyboard.KeySpace {
+						if e != nil { fmt.Fprintf(os.Stderr,"error reading input: %v\n", e) }
+
+						switch(k) {
+						case keyboard.KeySpace:
 							text += " "
-						} else if k == keyboard.KeyBackspace2 || k == keyboard.KeyBackspace {
+						case keyboard.KeyBackspace, keyboard.KeyBackspace2:
 							if len(text) == 0 { continue }
 							text = text[:len(text)-1]
-						}
-						if k == keyboard.KeyCtrlC || k == keyboard.KeyEsc {
+						case keyboard.KeyCtrlV:
+							text = Unwrap(clipboard.ReadAll())
+						case keyboard.KeyCtrlC, keyboard.KeyEsc:
 							fmt.Print("\r\x1b[2K\x1b[1A")
-							break
-						} else if k == keyboard.KeyEnter {
+							break inputLoop
+						case keyboard.KeyTab:
+							text += "    "
+						case keyboard.KeyEnter:
 							if !hasIdx {
 								var err error
 								idx, err = strconv.Atoi(text)
@@ -74,8 +81,10 @@ func SessionStart(sessionHistory SessionHistory) {
 								fmt.Print("\r\x1b[2K\x1b[2A")
 								sessionHistory.Render()
 								sessionHistory.Save()
-								break
+								break inputLoop
 							}
+						default:
+							text += string(c)
 						}
 					}
 				}
