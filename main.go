@@ -14,11 +14,10 @@ import (
 
 
 func main() {
-	startPtr := flag.Bool("start", false, "start session")
 	versionPtr := flag.Bool("v", false, "view trail cli version")
-	listPtr := flag.Bool("list", false, "list all past sessions")
-	connectPtr := flag.String("connect", "", "connect to a past session")
-	removePtr := flag.String("remove", "", "remove a past session")
+	listPtr := flag.Bool("ls", false, "list all past sessions")
+	connectPtr := flag.String("conn", "", "connect to a past session")
+	removePtr := flag.String("rm", "", "remove a past session")
 	flag.Parse()
 
 	if len(*removePtr) != 0 {
@@ -45,14 +44,6 @@ func main() {
 	}
 
 	switch(true) {
-	case *startPtr: 
-		sessionHistory := SessionHistory{
-			Id: ReverseString(base64.StdEncoding.EncodeToString([]byte(time.Now().String())))[:16],
-			StartTime: time.Now(),
-			LastModified: Unwrap(os.Stat(historyFile)).ModTime(), 
-			History: []History{},
-		}
-		SessionStart(sessionHistory)
 	case *versionPtr: fmt.Println("trail v1.0.0")
 	case *listPtr: 
 		homedir := Unwrap(os.UserHomeDir())
@@ -72,8 +63,8 @@ func main() {
 			fmt.Printf("\t\x1b[2m%s\x1b[0m\n", sessionHistory.StartTime)
 		}
 		if len(files) != 0 { 
-			fmt.Println("\nrun \x1b[36mtrail -connect \x1b[33m{id}\x1b[0m to continue the session") 
-			fmt.Println("run \x1b[36mtrail -remove \x1b[33m{id|\"*\"}\x1b[0m to remove a session") 
+			fmt.Println("\nrun \x1b[36mtrail -conn \x1b[33m{id}\x1b[0m to continue the session") 
+			fmt.Println("run \x1b[36mtrail -rm \x1b[33m{id|\"*\"}\x1b[0m to remove a session") 
 		}
 	case *connectPtr != "": 
 		var sessionName string
@@ -89,6 +80,14 @@ func main() {
 		sessionHistory := SessionHistory{}
 		sessionHistory.Load(sessionName)
 		sessionHistory.LastModified = time.Now()
+		SessionStart(sessionHistory)
+	default:
+		sessionHistory := SessionHistory{
+			Id: ReverseString(base64.StdEncoding.EncodeToString([]byte(time.Now().String())))[:16],
+			StartTime: time.Now(),
+			LastModified: Unwrap(os.Stat(historyFile)).ModTime(), 
+			History: []History{},
+		}
 		SessionStart(sessionHistory)
 	}
 }
