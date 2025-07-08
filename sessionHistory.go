@@ -64,12 +64,16 @@ func SessionStart(sessionHistory SessionHistory) {
 							if len(text) == 0 { continue }
 							text = text[:len(text)-1]
 						case keyboard.KeyCtrlV:
-							text = Unwrap(clipboard.ReadAll())
+							text += Unwrap(clipboard.ReadAll())
 						case keyboard.KeyCtrlC, keyboard.KeyEsc:
 							fmt.Print("\r\x1b[2K\x1b[1A")
 							break commentInputLoop
 						case keyboard.KeyTab:
 							text += "    "
+						case keyboard.KeyArrowLeft:
+							fmt.Print("\x1b[1D")
+						case keyboard.KeyArrowRight:
+							fmt.Print("\x1b[1C")
 						case keyboard.KeyEnter:
 							if !hasIdx {
 								var err error
@@ -108,7 +112,7 @@ func SessionStart(sessionHistory SessionHistory) {
 							if len(text) == 0 { continue }
 							text = text[:len(text)-1]
 						case keyboard.KeyCtrlV:
-							text = Unwrap(clipboard.ReadAll())
+							text += Unwrap(clipboard.ReadAll())
 						case keyboard.KeyCtrlC, keyboard.KeyEsc:
 							fmt.Print("\r\x1b[2K\x1b[1A")
 							break removeInputLoop
@@ -130,7 +134,7 @@ func SessionStart(sessionHistory SessionHistory) {
 										break removeInputLoop 
 									}
 
-									for range high {
+									for range high-low+1 {
 										sessionHistory.RemoveHistory(low)
 									}
 								} else { 
