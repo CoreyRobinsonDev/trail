@@ -13,10 +13,10 @@ import (
 var version = "v1.1.0"
 
 // TODO:
+// - enable left and right arrow movement when leaving a comment
 // - fix line moving on hitting backspace
 // - add (e)xport functionality that writes the trail to a markdown file
 // - order -ls output from oldest to newest
-// - name sessions
 // - start command list at 1
 // - (optional) add ability to edit comments
 
