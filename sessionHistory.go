@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/atotto/clipboard"
-	"github.com/eiannone/keyboard"
+	"github.com/coreyrobinsondev/trail/external/keyboard"
 )
 
 var (
