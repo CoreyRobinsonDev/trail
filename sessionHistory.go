@@ -33,11 +33,13 @@ func SessionStart(sessionHistory SessionHistory) {
 			if char != 0 {
 				if char == 'c' {
 					hasIdx := false
+					cursorX := 0
 					text := ""
 					idx := -1
 					fmt.Println()
 
 					commentInputLoop: for {
+						// print input line
 						if text == "" && !hasIdx {
 							fmt.Printf("\r\x1b[2KI> \x1b[2menter command index (ex: \x1b[36m0\x1b[0m \x1b[2mls)\x1b[0m\x1b[30D")
 						} else if !hasIdx {
@@ -54,6 +56,13 @@ func SessionStart(sessionHistory SessionHistory) {
 							}
 							lines = strings.Count(text, "\n")
 						}
+
+						// move cursor
+						if cursorX < 0 {
+							fmt.Printf("\x1b[%dD", cursorX*-1)
+						}
+
+
 						c, k, e := keyboard.GetKey()
 						if e != nil { fmt.Fprintf(os.Stderr,"error reading input: %v\n", e) }
 
@@ -71,9 +80,11 @@ func SessionStart(sessionHistory SessionHistory) {
 						case keyboard.KeyTab:
 							text += "    "
 						case keyboard.KeyArrowLeft:
-							fmt.Print("\x1b[1D")
+							if cursorX*-1 >= len(text) { continue }
+							cursorX--
 						case keyboard.KeyArrowRight:
-							fmt.Print("\x1b[1C")
+							if cursorX >= 0 { continue }
+							cursorX++
 						case keyboard.KeyEnter:
 							if !hasIdx {
 								var err error

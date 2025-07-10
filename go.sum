@@ -1,6 +1,6 @@
 github.com/atotto/clipboard v0.1.4 h1:EH0zSVneZPSuFR11BlR9YppQTVDbh5+16AmcJi4g1z4=
 github.com/atotto/clipboard v0.1.4/go.mod h1:ZY9tmq7sm5xIbd9bOK4onWV4S6X0u6GY7Vn0Yu86PYI=
-github.com/coreyrobinsondev/keyboard v1.0.1 h1:cNwxz8fo5m7NVM3tXtlRFMVElMgsxK7gdOGqaZiLbpg=
-github.com/coreyrobinsondev/keyboard v1.0.1/go.mod h1:xYMncqe8KZtilqVV3UfOD84K5L+5a+3/AD18bkjVGPA=
+github.com/coreyrobinsondev/keyboard v1.0.2 h1:cRLO4qSko+NKJbdQSdd93VKwW53WAO3l3DpeiCxttPM=
+github.com/coreyrobinsondev/keyboard v1.0.2/go.mod h1:xYMncqe8KZtilqVV3UfOD84K5L+5a+3/AD18bkjVGPA=
 golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a h1:dGzPydgVsqGcTRVwiLJ1jVbufYwmzD3LfVPLKsKg+0k=
 golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
