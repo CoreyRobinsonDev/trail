@@ -13,11 +13,12 @@ import (
 var version = "v1.1.0"
 
 // TODO:
-// - enable left and right arrow movement when leaving a comment
 // - fix line moving on hitting backspace
 // - add (e)xport functionality that writes the trail to a markdown file
 // - order -ls output from oldest to newest
 // - start command list at 1
+// - remove the ability to call -rm alongside other flags
+// - color file name in SessionHistory.Load() error
 // - (optional) add ability to edit comments
 
 
@@ -26,6 +27,7 @@ func main() {
 	versionPtr := flag.Bool("v", false, "view trail cli version")
 	listPtr := flag.Bool("ls", false, "list all past sessions")
 	connectPtr := flag.String("conn", "", "connect to a past session")
+	exportPtr := flag.String("x", "", "export session to a markdown file")
 	removePtr := flag.String("rm", "", "remove a past session")
 	flag.Parse()
 
@@ -54,6 +56,19 @@ func main() {
 
 	switch(true) {
 	case *versionPtr: fmt.Printf("trail %s\n", version)
+	case *exportPtr != "":
+		var sessionName string
+		homedir := Unwrap(os.UserHomeDir())
+		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
+
+		for _, file := range files {
+			if strings.HasPrefix(file.Name(), *exportPtr) {
+				sessionName = file.Name()
+				break
+			}
+		}
+		sessionHistory := SessionHistory{}
+		sessionHistory.Load(sessionName)
 	case *listPtr: 
 		homedir := Unwrap(os.UserHomeDir())
 		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
@@ -74,6 +89,7 @@ func main() {
 		if len(files) != 0 { 
 			fmt.Println("\nrun \x1b[36mtrail -conn \x1b[33m{id}\x1b[0m to continue the session") 
 			fmt.Println("run \x1b[36mtrail -rm \x1b[33m{id|\"*\"}\x1b[0m to remove a session") 
+			fmt.Println("run \x1b[36mtrail -x \x1b[33m{id|\"*\"}\x1b[0m to export a session") 
 		}
 	case *connectPtr != "": 
 		var sessionName string
@@ -95,7 +111,7 @@ func main() {
 			Id: ReverseString(base64.StdEncoding.EncodeToString([]byte(time.Now().String())))[:16],
 			StartTime: time.Now(),
 			LastModified: Unwrap(os.Stat(historyFile)).ModTime(), 
-			History: []History{},
+			Commands: []Command{},
 		}
 		SessionStart(sessionHistory)
 	}
