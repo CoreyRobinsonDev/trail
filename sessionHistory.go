@@ -275,7 +275,7 @@ func (sh SessionHistory) Export() {
 	defer file.Close()
 
 	file.WriteString(fmt.Sprintf(`---
-title: Trail Session %s
+title: %s
 date: %v
 ---
 `, sh.Id, sh.StartTime))

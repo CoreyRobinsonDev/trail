@@ -13,7 +13,6 @@ var version = "v1.1.0"
 
 // TODO:
 // - fix line moving on hitting backspace
-// - order -ls output from oldest to newest
 // - (optional) add ability to edit comments
 
 
