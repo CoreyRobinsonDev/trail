@@ -248,11 +248,7 @@ func (sh SessionHistory) Save() {
 
 func (sh *SessionHistory) Load(file string) {
 	homedir := Unwrap(os.UserHomeDir())
-	bytes, err := os.ReadFile(homedir + "/.config/trail/sessions/" + file)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name being with [%s] could not be found\n", file)
-		os.Exit(1)
-	}
+	bytes := Unwrap(os.ReadFile(homedir + "/.config/trail/sessions/" + file))
 	Expect(json.Unmarshal(bytes, &sh))
 }
 

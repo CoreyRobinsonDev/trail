@@ -15,7 +15,6 @@ var version = "v1.1.0"
 // TODO:
 // - fix line moving on hitting backspace
 // - order -ls output from oldest to newest
-// - start command list at 1
 // - remove the ability to call -rm alongside other flags
 // - color file name in SessionHistory.Load() error
 // - (optional) add ability to edit comments
@@ -66,6 +65,10 @@ func main() {
 				break
 			}
 		}
+		if sessionName == "" {
+			fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name beginning with \x1b[36m%s\x1b[0m could not be found\n", *exportPtr)
+			os.Exit(1)
+		}
 		sessionHistory := SessionHistory{}
 		sessionHistory.Load(sessionName)
 		sessionHistory.Export()
@@ -101,6 +104,10 @@ func main() {
 				sessionName = file.Name()
 				break
 			}
+		}
+		if sessionName == "" {
+			fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name beginning with \x1b[36m%s\x1b[0m could not be found\n", *connectPtr)
+			os.Exit(1)
 		}
 		sessionHistory := SessionHistory{}
 		sessionHistory.Load(sessionName)
