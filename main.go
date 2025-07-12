@@ -16,7 +16,6 @@ var version = "v1.1.0"
 // - fix line moving on hitting backspace
 // - order -ls output from oldest to newest
 // - remove the ability to call -rm alongside other flags
-// - color file name in SessionHistory.Load() error
 // - (optional) add ability to edit comments
 
 
@@ -29,7 +28,10 @@ func main() {
 	removePtr := flag.String("rm", "", "remove a past session")
 	flag.Parse()
 
-	if len(*removePtr) != 0 {
+
+	switch(true) {
+	case *versionPtr: fmt.Printf("trail %s\n", version)
+	case *removePtr != "":
 		homedir := Unwrap(os.UserHomeDir())
 		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
 		found := false
@@ -50,10 +52,6 @@ func main() {
 			fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name being with [%s] could not be found\n", *removePtr)
 			os.Exit(1)
 		}
-	}
-
-	switch(true) {
-	case *versionPtr: fmt.Printf("trail %s\n", version)
 	case *exportPtr != "":
 		var sessionName string
 		homedir := Unwrap(os.UserHomeDir())
