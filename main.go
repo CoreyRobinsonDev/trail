@@ -14,7 +14,6 @@ var version = "v1.1.0"
 
 // TODO:
 // - fix line moving on hitting backspace
-// - add (e)xport functionality that writes the trail to a markdown file
 // - order -ls output from oldest to newest
 // - start command list at 1
 // - remove the ability to call -rm alongside other flags

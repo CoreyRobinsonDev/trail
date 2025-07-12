@@ -226,7 +226,7 @@ func (sh SessionHistory) Render() {
 	for i, item := range sh.Commands {
 		fmt.Printf(
 			"\x1b[2K\x1b[2m%d\x1b[0m %s\n",
-			i,
+			i+1,
 			item.Name,
 		)
 		for _, comment := range item.Comments {
