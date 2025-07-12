@@ -69,6 +69,7 @@ func main() {
 		}
 		sessionHistory := SessionHistory{}
 		sessionHistory.Load(sessionName)
+		sessionHistory.Export()
 	case *listPtr: 
 		homedir := Unwrap(os.UserHomeDir())
 		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))

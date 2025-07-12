@@ -257,11 +257,20 @@ func (sh *SessionHistory) Load(file string) {
 }
 
 func (sh SessionHistory) Export() {
-	file := Unwrap(os.Create(sh.Id + ".md"))
+	file := Unwrap(os.Create("./" + sh.Id + ".md"))
 	defer file.Close()
 
+	file.WriteString(fmt.Sprintf(`---
+title: Trail Session %s
+date: %v
+---
+`, sh.Id, sh.StartTime))
+
 	for _, command := range sh.Commands {
+		file.WriteString(fmt.Sprintf("1. %s\n", command.Name))
 
-
+		for _, comment := range command.Comments {
+			file.WriteString(fmt.Sprintf("\t- %s\n", comment))
+		}
 	}
 }
