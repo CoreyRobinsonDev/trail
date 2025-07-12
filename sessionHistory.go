@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -189,6 +190,23 @@ func HandleRemove(sessionHistory SessionHistory) {
 	}
 }
 
+func GetSessions() []SessionHistory {
+		homedir := Unwrap(os.UserHomeDir())
+		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
+		sessions := []SessionHistory{}
+		
+		for _, file := range files {
+			sessionHistory := SessionHistory{}
+			Expect(json.Unmarshal(Unwrap(os.ReadFile(homedir + "/.config/trail/sessions/" + file.Name())), &sessionHistory))
+			sessions = append(sessions, sessionHistory)
+		}
+
+		sort.Slice(sessions, func(i, j int) bool {
+			return sessions[i].StartTime.Before(sessions[j].StartTime)
+		})
+
+	return sessions
+}
 
 type Command struct {
 	Name string `json:"cmd"`

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -15,7 +14,6 @@ var version = "v1.1.0"
 // TODO:
 // - fix line moving on hitting backspace
 // - order -ls output from oldest to newest
-// - remove the ability to call -rm alongside other flags
 // - (optional) add ability to edit comments
 
 
@@ -33,84 +31,71 @@ func main() {
 	case *versionPtr: fmt.Printf("trail %s\n", version)
 	case *removePtr != "":
 		homedir := Unwrap(os.UserHomeDir())
-		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
-		found := false
 
 		if *removePtr == "*" {
 			Expect(os.RemoveAll(homedir + "/.config/trail/sessions"))
 			Expect(os.MkdirAll(homedir + "/.config/trail/sessions", 0777))
-			found = true
+			return
 		} else {
-			for _, file := range files {
-				if strings.HasPrefix(file.Name(), *removePtr) {
-					Expect(os.Remove(homedir + "/.config/trail/sessions/" + file.Name()))
-					found = true
+			sessions := GetSessions()
+
+			for _, session := range sessions {
+				if strings.HasPrefix(session.Id, *removePtr) {
+					Expect(os.Remove(homedir + "/.config/trail/sessions/" + session.Id + ".json"))
+					return
 				}
 			}
 		}
-		if !found {
-			fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name being with [%s] could not be found\n", *removePtr)
-			os.Exit(1)
-		}
-	case *exportPtr != "":
-		var sessionName string
-		homedir := Unwrap(os.UserHomeDir())
-		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
 
-		for _, file := range files {
-			if strings.HasPrefix(file.Name(), *exportPtr) {
-				sessionName = file.Name()
-				break
+		fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name being with [%s] could not be found\n", *removePtr)
+		os.Exit(1)
+	case *exportPtr != "":
+		sessions := GetSessions()
+
+		for _, session := range sessions {
+			if strings.HasPrefix(session.Id, *exportPtr) {
+				session.Export()
+				return
 			}
 		}
-		if sessionName == "" {
-			fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name beginning with \x1b[36m%s\x1b[0m could not be found\n", *exportPtr)
-			os.Exit(1)
-		}
-		sessionHistory := SessionHistory{}
-		sessionHistory.Load(sessionName)
-		sessionHistory.Export()
+
+		fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name beginning with \x1b[36m%s\x1b[0m could not be found\n", *exportPtr)
+		os.Exit(1)
+
 	case *listPtr: 
 		homedir := Unwrap(os.UserHomeDir())
 		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
 		uniqueIdentifiers := []string{}
+		sessions := GetSessions()
 
-		for _, file := range files {
+		for _, session := range sessions {
 			idx := 1
-			fileName := strings.Split(file.Name(), ".")[0]
-			for slices.Contains(uniqueIdentifiers, fileName[:idx]) {
+			for slices.Contains(uniqueIdentifiers, session.Id[:idx]) {
 				idx++
 			}
-			uniqueIdentifiers = append(uniqueIdentifiers, fileName[:idx])
-			sessionHistory := SessionHistory{}
-			Expect(json.Unmarshal(Unwrap(os.ReadFile(homedir + "/.config/trail/sessions/" + file.Name())), &sessionHistory))
-			fmt.Printf("\x1b[33m%s\x1b[0m%s", fileName[:idx], fileName[idx:])
-			fmt.Printf("\t\x1b[2m%s\x1b[0m\n", sessionHistory.StartTime)
+			uniqueIdentifiers = append(uniqueIdentifiers, session.Id[:idx])
+			fmt.Printf("\x1b[33m%s\x1b[0m%s", session.Id[:idx], session.Id[idx:])
+			fmt.Printf("\t\x1b[2m%s\x1b[0m\n", session.StartTime)
 		}
+
 		if len(files) != 0 { 
 			fmt.Println("\nrun \x1b[36mtrail -conn \x1b[33m{id}\x1b[0m to continue the session") 
 			fmt.Println("run \x1b[36mtrail -rm \x1b[33m{id|\"*\"}\x1b[0m to remove a session") 
-			fmt.Println("run \x1b[36mtrail -x \x1b[33m{id|\"*\"}\x1b[0m to export a session") 
+			fmt.Println("run \x1b[36mtrail -x \x1b[33m{id}\x1b[0m to export a session") 
 		}
 	case *connectPtr != "": 
-		var sessionName string
-		homedir := Unwrap(os.UserHomeDir())
-		files := Unwrap(os.ReadDir(homedir + "/.config/trail/sessions"))
+		sessions := GetSessions()
 
-		for _, file := range files {
-			if strings.HasPrefix(file.Name(), *connectPtr) {
-				sessionName = file.Name()
-				break
+		for _, session := range sessions {
+			if strings.HasPrefix(session.Id, *connectPtr) {
+				session.LastModified = time.Now()
+				SessionStart(session)
+				return
 			}
 		}
-		if sessionName == "" {
-			fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name beginning with \x1b[36m%s\x1b[0m could not be found\n", *connectPtr)
-			os.Exit(1)
-		}
-		sessionHistory := SessionHistory{}
-		sessionHistory.Load(sessionName)
-		sessionHistory.LastModified = time.Now()
-		SessionStart(sessionHistory)
+
+		fmt.Fprintf(os.Stderr, "\x1b[2mtrail:\x1b[0m a file name beginning with \x1b[36m%s\x1b[0m could not be found\n", *connectPtr)
+		os.Exit(1)
 	default:
 		sessionHistory := SessionHistory{
 			Id: ReverseString(base64.StdEncoding.EncodeToString([]byte(time.Now().String())))[:16],
