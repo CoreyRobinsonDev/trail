@@ -111,6 +111,9 @@ func HandleComment(sessionHistory SessionHistory) {
 		case keyboard.KeyArrowRight:
 			if cursorX >= 0 { continue }
 			cursorX++
+		case keyboard.KeyArrowDown:
+		case keyboard.KeyArrowUp:
+			continue
 		case keyboard.KeyEnter:
 			if !hasIdx {
 				var err error
@@ -170,6 +173,9 @@ func HandleRemove(sessionHistory SessionHistory) {
 		case keyboard.KeyArrowRight:
 			if cursorX >= 0 { continue }
 			cursorX++
+		case keyboard.KeyArrowDown:
+		case keyboard.KeyArrowUp:
+			continue
 		case keyboard.KeyTab:
 			text += "    "
 		case keyboard.KeyEnter:
@@ -246,6 +252,9 @@ func HandleTitleChange(sessionHistory SessionHistory) {
 		case keyboard.KeyArrowRight:
 			if cursorX >= 0 { continue }
 			cursorX++
+		case keyboard.KeyArrowDown:
+		case keyboard.KeyArrowUp:
+			continue
 		case keyboard.KeyTab:
 			text += "    "
 		case keyboard.KeyEnter:
