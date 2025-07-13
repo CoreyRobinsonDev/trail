@@ -88,7 +88,7 @@ func HandleComment(sessionHistory SessionHistory) {
 			fmt.Printf("\x1b[%dD", cursorX*-1)
 		}
 
-
+		// blocking
 		c, k, e := keyboard.GetKey()
 		if e != nil { fmt.Fprintf(os.Stderr,"error reading input: %v\n", e) }
 
@@ -132,6 +132,7 @@ func HandleComment(sessionHistory SessionHistory) {
 }
 
 func HandleRemove(sessionHistory SessionHistory) {
+	cursorX := 0
 	text := ""
 	fmt.Println()
 
@@ -141,8 +142,16 @@ func HandleRemove(sessionHistory SessionHistory) {
 		} else {
 			fmt.Printf("\r\x1b[2K> %s", text)
 		}
+
+		// move cursor
+		if cursorX < 0 {
+			fmt.Printf("\x1b[%dD", cursorX*-1)
+		}
+
+		// blocking
 		c, k, e := keyboard.GetKey()
 		if e != nil { fmt.Fprintf(os.Stderr,"error reading input: %v\n", e) }
+
 
 		switch(k) {
 		case keyboard.KeySpace:
@@ -155,6 +164,12 @@ func HandleRemove(sessionHistory SessionHistory) {
 		case keyboard.KeyCtrlC, keyboard.KeyEsc:
 			fmt.Print("\r\x1b[2K\x1b[1A")
 			return
+		case keyboard.KeyArrowLeft:
+			if cursorX*-1 >= len(text) { continue }
+			cursorX--
+		case keyboard.KeyArrowRight:
+			if cursorX >= 0 { continue }
+			cursorX++
 		case keyboard.KeyTab:
 			text += "    "
 		case keyboard.KeyEnter:
@@ -194,6 +209,7 @@ func HandleRemove(sessionHistory SessionHistory) {
 
 func HandleTitleChange(sessionHistory SessionHistory) {
 	text := ""
+	cursorX := 0
 	fmt.Println()
 
 	loop: for {
@@ -202,8 +218,16 @@ func HandleTitleChange(sessionHistory SessionHistory) {
 		} else {
 			fmt.Printf("\r\x1b[2K> %s", text)
 		}
+
+		// move cursor
+		if cursorX < 0 {
+			fmt.Printf("\x1b[%dD", cursorX*-1)
+		}
+
+		// blocking
 		c, k, e := keyboard.GetKey()
 		if e != nil { fmt.Fprintf(os.Stderr,"error reading input: %v\n", e) }
+
 
 		switch(k) {
 		case keyboard.KeySpace:
@@ -216,6 +240,12 @@ func HandleTitleChange(sessionHistory SessionHistory) {
 		case keyboard.KeyCtrlC, keyboard.KeyEsc:
 			fmt.Print("\r\x1b[2K\x1b[1A")
 			return
+		case keyboard.KeyArrowLeft:
+			if cursorX*-1 >= len(text) { continue }
+			cursorX--
+		case keyboard.KeyArrowRight:
+			if cursorX >= 0 { continue }
+			cursorX++
 		case keyboard.KeyTab:
 			text += "    "
 		case keyboard.KeyEnter:
