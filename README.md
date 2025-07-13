@@ -1,7 +1,7 @@
 # trail
 Leave a trail of commands
 ```bash
-c to add a comment • r to remove a command • esc quit
+c to add a comment • r to remove a command • t to set a session title • esc quit
 0 ping 10.129.134.166
 1 nmap -sV 10.129.134.166
   • 135/tcp  open  msrpc         Microsoft Windows RPC
@@ -28,6 +28,7 @@ c to add a comment • r to remove a command • esc quit
 
 run trail -conn {id} to continue the session
 run trail -rm {id|"*"} to remove a session
+run trail -x {id} to export a session
 ```
 
 - Use `-conn {id}` to continue an existing session
@@ -35,12 +36,16 @@ run trail -rm {id|"*"} to remove a session
 trail -conn 3A
 ```
 
+- Use `-x {id}` to export an existing session to a markdown file
+```bash
+trail -x 3A
+```
+
 - Use `-rm {id}` to remove an existing session
 - Use `-rm "*"` to remove all past sessions
 ```bash
 trail -rm 3A
 ```
-
 ## Install
 Download pre-built binary for your system here [Releases](https://github.com/CoreyRobinsonDev/trail/releases).
 
@@ -52,7 +57,7 @@ git clone https://github.com/CoreyRobinsonDev/trail.git
 - Create **trail** binary
 ```bash
 cd trail
-go build -o /usr/local/bin
+sudo go build -o /usr/local/bin
 ```
 - Confirm that the program was built successfully
 ```bash
