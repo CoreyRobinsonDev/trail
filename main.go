@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 )
-var version = "v1.1.0"
+var version = "v1.2.0"
 
 // TODO:
 // - fix line moving on hitting backspace
