@@ -36,6 +36,8 @@ func SessionStart(sessionHistory SessionHistory) {
 					HandleComment(sessionHistory)
 				} else if char == 'r' {
 					HandleRemove(sessionHistory)
+				} else if char == 't' {
+					HandleTitleChange(sessionHistory)
 				}
 			} else {
 				if key == keyboard.KeyCtrlC || key == keyboard.KeyEsc {
@@ -62,7 +64,7 @@ func HandleComment(sessionHistory SessionHistory) {
 	idx := -1
 	fmt.Println()
 
-	commentInputLoop: for {
+	for {
 		// print input line
 		if text == "" && !hasIdx {
 			fmt.Printf("\r\x1b[2KI> \x1b[2menter command index (ex: \x1b[36m0\x1b[0m \x1b[2mls)\x1b[0m\x1b[30D")
@@ -100,7 +102,7 @@ func HandleComment(sessionHistory SessionHistory) {
 			text += Unwrap(clipboard.ReadAll())
 		case keyboard.KeyCtrlC, keyboard.KeyEsc:
 			fmt.Print("\r\x1b[2K\x1b[1A")
-			break commentInputLoop
+			return
 		case keyboard.KeyTab:
 			text += "    "
 		case keyboard.KeyArrowLeft:
@@ -121,7 +123,7 @@ func HandleComment(sessionHistory SessionHistory) {
 				sessionHistory.AddComment(idx,text)
 				sessionHistory.Render()
 				sessionHistory.Save()
-				break commentInputLoop
+				return
 			}
 		default:
 			text += string(c)
@@ -133,7 +135,7 @@ func HandleRemove(sessionHistory SessionHistory) {
 	text := ""
 	fmt.Println()
 
-	removeInputLoop: for {
+	for {
 		if text == "" {
 			fmt.Printf("\r\x1b[2K> \x1b[2menter command index or range of indexes (ex: \x1b[36m0-4\x1b[0m)\x1b[49D")
 		} else {
@@ -152,7 +154,7 @@ func HandleRemove(sessionHistory SessionHistory) {
 			text += Unwrap(clipboard.ReadAll())
 		case keyboard.KeyCtrlC, keyboard.KeyEsc:
 			fmt.Print("\r\x1b[2K\x1b[1A")
-			break removeInputLoop
+			return
 		case keyboard.KeyTab:
 			text += "    "
 		case keyboard.KeyEnter:
@@ -162,13 +164,13 @@ func HandleRemove(sessionHistory SessionHistory) {
 					idxes := strings.Split(text, "-")
 					if len(idxes) != 2 { 
 						fmt.Print("\r\x1b[2K\x1b[1A")
-						break removeInputLoop 
+						return
 					}
 					low, e1 := strconv.Atoi(idxes[0])
 					high, e2 := strconv.Atoi(idxes[1])
 					if e1 != nil || e2 != nil || low > high { 
 						fmt.Print("\r\x1b[2K\x1b[1A")
-						break removeInputLoop 
+						return
 					}
 
 					for range high-low+1 {
@@ -176,14 +178,62 @@ func HandleRemove(sessionHistory SessionHistory) {
 					}
 				} else { 
 					fmt.Print("\r\x1b[2K\x1b[1A")
-					break removeInputLoop 
+					return
 				}
 			} else {
 				sessionHistory.RemoveHistory(idx)
 			}
 			sessionHistory.Render()
 			sessionHistory.Save()
-			break removeInputLoop
+			return
+		default:
+			text += string(c)
+		}
+	}
+}
+
+func HandleTitleChange(sessionHistory SessionHistory) {
+	text := ""
+	fmt.Println()
+
+	loop: for {
+		if text == "" {
+			fmt.Printf("\r\x1b[2K> \x1b[2menter title\x1b[0m\x1b[11D")
+		} else {
+			fmt.Printf("\r\x1b[2K> %s", text)
+		}
+		c, k, e := keyboard.GetKey()
+		if e != nil { fmt.Fprintf(os.Stderr,"error reading input: %v\n", e) }
+
+		switch(k) {
+		case keyboard.KeySpace:
+			text += " "
+		case keyboard.KeyBackspace, keyboard.KeyBackspace2:
+			if len(text) == 0 { continue }
+			text = text[:len(text)-1]
+		case keyboard.KeyCtrlV:
+			text += Unwrap(clipboard.ReadAll())
+		case keyboard.KeyCtrlC, keyboard.KeyEsc:
+			fmt.Print("\r\x1b[2K\x1b[1A")
+			return
+		case keyboard.KeyTab:
+			text += "    "
+		case keyboard.KeyEnter:
+			sessions := GetSessions()
+			for _, session := range sessions {
+				if session.Id == text {
+					fmt.Printf("\r\x1b[2K> %s", text)
+					continue loop
+				}
+			}
+			homedir := Unwrap(os.UserHomeDir())
+			// I don't care if this errors lmao
+			os.Remove(homedir + "/.config/trail/sessions/" + sessionHistory.Id + ".json")
+
+			sessionHistory.Id = text
+			sessionHistory.Render()
+			sessionHistory.Save()
+			return
 		default:
 			text += string(c)
 		}
@@ -240,7 +290,7 @@ func (sh *SessionHistory) AddComment(idx int, content string) {
 }
 
 func (sh SessionHistory) Render() {
-	fmt.Println("\x1b[2J\x1b[H\x1b[36mc\x1b[0m \x1b[90mto add a comment • \x1b[36mr\x1b[0m \x1b[90mto remove a command • \x1b[0m\x1b[36mesc\x1b[0m \x1b[90mquit\x1b[0m")
+	fmt.Println("\x1b[2J\x1b[H\x1b[36mc\x1b[0m \x1b[90mto add a comment • \x1b[36mr\x1b[0m \x1b[90mto remove a command • \x1b[36mt\x1b[0m \x1b[90mto set a session title • \x1b[0m\x1b[36mesc\x1b[0m \x1b[90mquit\x1b[0m")
 	for i, item := range sh.Commands {
 		fmt.Printf(
 			"\x1b[2K\x1b[2m%d\x1b[0m %s\n",

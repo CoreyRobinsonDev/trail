@@ -12,6 +12,7 @@ import (
 var version = "v1.1.0"
 
 // TODO:
+// - enable curor movement while writing the index to remove a command or setting a session title
 // - fix line moving on hitting backspace
 // - (optional) add ability to edit comments
 
